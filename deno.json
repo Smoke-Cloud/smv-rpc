@@ -1,0 +1,15 @@
+{
+  "name": "@smoke-cloud/smv-rpc",
+  "version": "0.1.0",
+  "exports": "./mod.ts",
+  "lint": {
+    "rules": {
+      "exclude": [
+        "require-await"
+      ]
+    }
+  },
+  "fmt": {
+    "indentWidth": 2
+  }
+}
