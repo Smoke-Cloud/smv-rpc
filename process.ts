@@ -1,4 +1,4 @@
-import * as path from "jsr:@std/path";
+import * as path from "jsr:@std/path@1.0.0";
 import { SmvRpc } from "./rpc.ts";
 
 export class SmokeviewProcess {
