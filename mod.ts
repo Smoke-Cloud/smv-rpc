@@ -35,9 +35,9 @@ export class Smokeview {
   async setClipping(
     params: {
       mode?: 2;
-      x?: { min?: number; max?: number };
-      y?: { min?: number; max?: number };
-      z?: { min?: number; max?: number };
+      x?: { min?: number | null; max?: number | null };
+      y?: { min?: number | null; max?: number | null };
+      z?: { min?: number | null; max?: number | null };
     },
   ) {
     await this.smvRpc.call("set_clipping", params);
@@ -93,9 +93,43 @@ export class Smokeview {
   async getMeshes(): Promise<Mesh[]> {
     return await this.call("get_meshes") as Mesh[];
   }
-
+  async loadSliceStd(type: string, axis: 1 | 2 | 3, distance: number) {
+    const slices = await this.getSlices();
+    const meshes = await this.getMeshes();
+    const sliceIndices = slices.filter((
+      c: Slice,
+    ) => {
+      const mesh = meshes[c.mesh];
+      const cellWidth = findCellDimension(mesh, c.idir, distance);
+      if (!cellWidth) return false;
+      return c.shortlabel === type && c.idir === axis &&
+        c.position_orig > (distance - cellWidth * 0.25) &&
+        c.position_orig < (distance + cellWidth * 0.25);
+    });
+    await this.loadSliceIndices(
+      sliceIndices.map((c: Slice) => c.index - 1),
+    );
+  }
   async loadSliceIndices(indices: number[]): Promise<void> {
     await this.call("load_slice_indices", indices);
+  }
+  async setCameraXMin() {
+    await this.setOrthoPreset("XMIN");
+  }
+  async setCameraXMax() {
+    await this.setOrthoPreset("XMAX");
+  }
+  async setCameraYMin() {
+    await this.setOrthoPreset("YMIN");
+  }
+  async setCameraYMax() {
+    await this.setOrthoPreset("YMAX");
+  }
+  async setCameraZMin() {
+    await this.setOrthoPreset("ZMIN");
+  }
+  async setCameraZMax() {
+    await this.setOrthoPreset("ZMAX");
   }
   async setOrthoPreset(view: string) {
     await this.call("set_ortho_preset", [view]);
@@ -103,26 +137,54 @@ export class Smokeview {
   async setTime(time: number) {
     await this.call("set_time", [time]);
   }
+  async getNGlobalTimes(): Promise<number | undefined> {
+    return await this.call("get_n_global_times") as number | undefined;
+  }
+  async getTime(): Promise<number | undefined> {
+    return await this.call("get_time") as number | undefined;
+  }
+  async setTimeEnd() {
+    const nframes = await this.getNGlobalTimes();
+    if (nframes != undefined) this.setFrame(nframes - 1);
+  }
+  async setOrthographic() {
+    await this.setProjectionType(1);
+  }
   async setProjectionType(projectionType: number) {
     await this.call("set_projection_type", [projectionType]);
   }
   async setColorbar(colorbarName: string) {
     await this.call("set_colorbar", [colorbarName]);
   }
+  async setColorbarFlip(set: boolean) {
+    await this.call("set_colorbar_flip", [set]);
+  }
+  async setCameraAz(value: number) {
+    await this.call("set_camera_az", [value]);
+  }
   async setFontSize(fontSize: string) {
     await this.call("set_font_size", [fontSize]);
   }
-  async setSliceBounds(params: {
-    type: string;
-    set_min: boolean;
-    value_min: number;
-    set_max: boolean;
-    value_max: number;
+  async setSliceBounds(type: string, bounds: {
+    min?: number | null;
+    max?: number | null;
   }) {
+    const params = {
+      type,
+      set_min: bounds.min !== null,
+      value_min: bounds.min,
+      set_max: bounds.max !== null,
+      value_max: bounds.max,
+    };
     await this.call("set_slice_bounds", params);
   }
-  async render(options?: { basename?: string }) {
-    await this.call("render", options);
+  async render(basename?: string, options?: { basename?: string }) {
+    let opts = options;
+    if (basename) {
+      if (!opts) opts = {};
+      opts.basename = basename;
+    }
+    await this.call("render", opts);
   }
   async exit() {
     await this.smvRpc.notify("exit");
@@ -161,4 +223,17 @@ export function findCellDimension(
   }
   // TODO: currently this is just a fallback
   return 0.1;
+}
+
+export interface DataVector<X, Y> {
+  name: string;
+  x: {
+    name: string;
+    units: string;
+  };
+  y: {
+    name: string;
+    units: string;
+  };
+  values: { x: X; y: Y }[];
 }
