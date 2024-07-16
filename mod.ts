@@ -26,6 +26,7 @@ export interface Smoke3d {
   index: number;
 }
 export class Smokeview {
+  private vectors?: CsvVectors;
   constructor(private smvRpc: SmvRpc) {
   }
   static async launch(smvPath: string): Promise<Smokeview> {
@@ -143,6 +144,25 @@ export class Smokeview {
   async getTime(): Promise<number | undefined> {
     return await this.call("get_time") as number | undefined;
   }
+  async getCsvVectors(): Promise<CsvVectors> {
+    if (this.vectors) return this.vectors;
+    this.vectors = await this.call("get_csv_vectors") as CsvVectors;
+    return this.vectors;
+  }
+  async getCsvSet(
+    type: string,
+  ): Promise<Record<string, DataVector<number, number>> | undefined> {
+    const vectors = await this.getCsvVectors();
+    return vectors[type];
+  }
+  async getCsv(
+    type: string,
+    id: string,
+  ): Promise<DataVector<number, number> | undefined> {
+    const set = await this.getCsvSet(type);
+    if (!set) return;
+    return set[id];
+  }
   async setTimeEnd() {
     const nframes = await this.getNGlobalTimes();
     if (nframes != undefined) this.setFrame(nframes - 1);
@@ -195,6 +215,11 @@ export class Smokeview {
     return await this.smvRpc.call(method, params);
   }
 }
+
+export type CsvVectors = Record<
+  string,
+  Record<string, DataVector<number, number>>
+>;
 
 export function findCellDimension(
   mesh: Mesh,
