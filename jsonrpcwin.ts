@@ -20,7 +20,6 @@ switch (Deno.build.os) {
 }
 
 const libName = `./bin/jsonrpc.${libSuffix}`;
-console.log(libName);
 // Open library and define exported symbols
 
 export class JsonRpcClientWin {
@@ -54,7 +53,6 @@ export class JsonRpcClientWin {
   constructor(public socketPath: string) {
     this.client = this.dylib.symbols
       .jrpc_client_create_ptr();
-    console.log(this.client);
     this.conn = this.dylib.symbols.jrpc_client_connect_ptr(
       this.client,
       new TextEncoder().encode(`${this.socketPath}\0`),

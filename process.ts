@@ -29,12 +29,10 @@ export class SmokeviewProcess {
     try {
       // poll until socket file exists. We can't use stat to be compatible
       // with windows.
-      console.log(this.socketPath);
       let exists = false;
       const socketDir = path.dirname(this.socketPath);
       while (!exists) {
         for await (const dirEntry of Deno.readDir(socketDir)) {
-          console.log(dirEntry.name);
           if (dirEntry.name === path.basename(this.socketPath)) {
             exists = true;
             break;
