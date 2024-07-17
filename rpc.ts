@@ -9,10 +9,10 @@ export class SmvRpc {
     this.rpc = new JsonRpcClientWin(process.socketPath);
   }
   async call(method: string, params?: JsonRpcParams): Promise<JsonRpcResult> {
-    return this.rpc.call(method, params);
+    return await this.rpc.call(method, params);
   }
   async notify(method: string, params?: JsonRpcParams): Promise<JsonRpcResult> {
-    return this.rpc.notify(method, params);
+    return await this.rpc.notify(method, params);
   }
   close() {
     this.rpc.close();

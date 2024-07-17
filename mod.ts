@@ -5,6 +5,7 @@ import type { JsonRpcParams, JsonRpcResult } from "./jsonrpccommon.ts";
 export type JsonRpcClient = JsonRpcClientUnix | JsonRpcClientWin;
 
 export interface Slice {
+  longlabel: string;
   shortlabel: string;
   index: number;
   idir: number;
@@ -89,7 +90,7 @@ export class Smokeview {
     await this.call("unload_all");
   }
   async getSlices(): Promise<Slice[]> {
-    return await this.call("get_slices") as Slice[];
+    return (await this.call("get_slices")) as Slice[];
   }
   async getMeshes(): Promise<Mesh[]> {
     return await this.call("get_meshes") as Mesh[];
@@ -103,7 +104,7 @@ export class Smokeview {
       const mesh = meshes[c.mesh];
       const cellWidth = findCellDimension(mesh, c.idir, distance);
       if (!cellWidth) return false;
-      return c.shortlabel === type && c.idir === axis &&
+      return c.longlabel === type && c.idir === axis &&
         c.position_orig > (distance - cellWidth * 0.25) &&
         c.position_orig < (distance + cellWidth * 0.25);
     });

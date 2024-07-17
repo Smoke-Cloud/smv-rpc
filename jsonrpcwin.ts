@@ -30,7 +30,7 @@ export class JsonRpcClientWin {
       "print_something": { parameters: [], result: "void" },
       "jrpc_send_request_s": {
         parameters: ["pointer", "buffer", "buffer"],
-        result: "void",
+        result: "i32",
       },
       "jrpc_client_create_ptr": { parameters: [], result: "pointer" },
       "pop_or_block_s": { parameters: ["pointer"], result: "buffer" },
@@ -63,7 +63,7 @@ export class JsonRpcClientWin {
     const paramsBuffer = new TextEncoder().encode(
       `${JSON.stringify(params)}\0`,
     );
-    this.dylib.symbols.jrpc_send_request_s(
+    return this.dylib.symbols.jrpc_send_request_s(
       this.conn,
       methodBuffer,
       paramsBuffer,
@@ -87,11 +87,14 @@ export class JsonRpcClientWin {
     }
   }
   async call(method: string, params?: JsonRpcParams): Promise<JsonRpcResult> {
-    await this.send(method, params);
+    const requestId = await this.send(method, params);
     this.n++;
     // TODO: make sure ids correspond
     const r = await this.recv();
     if (r && isJsonRpcResponse(r)) {
+      if (r.id !== requestId) {
+        throw new Error(`reponse id is ${r.id} should be ${requestId}`);
+      }
       return r.result;
     } else {
       console.error(r);

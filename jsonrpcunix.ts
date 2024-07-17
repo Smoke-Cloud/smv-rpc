@@ -87,16 +87,20 @@ export class JsonRpcClientUnix {
     params?: JsonRpcParams,
   ): Promise<JsonRpcResult> {
     if (!this.reader) throw new Error("rpc not initialized");
+    const requestId = this.n;
     await this.send({
       "jsonrpc": "2.0",
       "method": method,
       "params": params,
-      "id": this.n,
+      "id": requestId,
     });
     this.n++;
     // TODO: make sure ids correspond
     const r = (await this.reader.read()).value;
     if (r && isJsonRpcResponse(r)) {
+      if (r.id !== requestId) {
+        throw new Error(`reponse id is ${r.id} should be ${requestId}`);
+      }
       return r.result;
     } else {
       console.error(r);
