@@ -77,6 +77,9 @@ export class JsonRpcClientWin {
       const responseS = dataView.getCString();
       try {
         const responseJson = JSON.parse(responseS);
+        if (typeof responseJson !== "object") {
+          throw new Error(`not object '${responseS}' ${responseJson}`);
+        }
         return responseJson;
       } catch (e) {
         console.error("could not parse: ", responseS);
