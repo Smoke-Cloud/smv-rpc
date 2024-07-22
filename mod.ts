@@ -45,13 +45,13 @@ export class Smokeview {
     await this.smvRpc.call("set_clipping", params);
   }
   async setChidVisibility(set: boolean) {
-    this.call("set_chid_visibility", [set]);
+    await this.call("set_chid_visibility", [set]);
   }
   async setTitleVisibility(set: boolean) {
-    this.call("set_title_visibility", [set]);
+    await this.call("set_title_visibility", [set]);
   }
   async setSmvVersionVisibility(set: boolean) {
-    this.call("set_smv_version_visibility", [set]);
+    await this.call("set_smv_version_visibility", [set]);
   }
   async setWindowSize(width: number, height: number) {
     await this.call("set_window_size", { width, height });
