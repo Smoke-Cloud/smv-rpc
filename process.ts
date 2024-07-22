@@ -11,7 +11,7 @@ export class SmokeviewProcess {
     this.socketPath = Deno.makeTempDirSync({ suffix: ".smv.socket.dir" });
     this.socketPath = path.join(this.socketPath, "socket");
     this.command = new Deno.Command(cmd, {
-      stdin: "inherit",
+      stdin: "null",
       stdout: "inherit",
       stderr: "inherit",
       cwd: path.dirname(this.smvPath),
