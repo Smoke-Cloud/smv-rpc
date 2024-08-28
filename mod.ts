@@ -1,7 +1,8 @@
 import type { JsonRpcClientUnix } from "./jsonrpcunix.ts";
 import type { JsonRpcClientWin } from "./jsonrpcwin.ts";
-import { type SmvRpc, startSmvRpc } from "./rpc.ts";
+export { type SmvRpc, startSmvRpc } from "./rpc.ts";
 import type { JsonRpcParams, JsonRpcResult } from "./jsonrpccommon.ts";
+import { type SmvRpc, startSmvRpc } from "./rpc.ts";
 export type JsonRpcClient = JsonRpcClientUnix | JsonRpcClientWin;
 
 export interface Slice {
