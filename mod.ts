@@ -35,6 +35,9 @@ export class Smokeview {
     const rpc = await startSmvRpc(smvPath);
     return new Smokeview(rpc);
   }
+  [Symbol.dispose](): void {
+    this.exit();
+  }
   async setClipping(
     params: {
       mode?: 2;
