@@ -107,7 +107,6 @@ export class JsonRpcClientWin {
     await this.send(method, params);
   }
   close() {
-    console.log("conn", this.conn);
     this.dylib.symbols.connection_destroy(this.conn);
     this.dylib.symbols.jrpc_client_destroy_ptr(this.client);
     this.dylib.close();
