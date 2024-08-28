@@ -1,6 +1,7 @@
 {
   "name": "@smoke-cloud/smv-rpc",
   "version": "0.1.6",
+  "license": "GPL",
   "exports": "./mod.ts",
   "lint": {
     "rules": {
