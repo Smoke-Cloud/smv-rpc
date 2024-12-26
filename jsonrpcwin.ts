@@ -100,7 +100,7 @@ export class JsonRpcClientWin {
       }
       return r.result;
     } else {
-      console.error(r);
+      console.error("Error:", r);
     }
   }
   async notify(method: string, params?: JsonRpcParams) {

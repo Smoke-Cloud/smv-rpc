@@ -12,6 +12,5 @@ export interface JsonRpcResponse {
   };
 }
 export function isJsonRpcResponse(o: object): o is JsonRpcResponse {
-  return "jsonrpc" in o && o["jsonrpc"] === "2.0" && "id" in o &&
-    "result" in o;
+  return "jsonrpc" in o && o["jsonrpc"] === "2.0" && "id" in o;
 }

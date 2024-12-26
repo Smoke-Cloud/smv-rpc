@@ -47,7 +47,6 @@ export class JsonRpcClientUnix {
         // const { value, done } = await reader.read();
         // if (value) {
         //     // const s = decoder.decode(value);
-        //     console.log("s:", value);
         //     for (const c of value) {
         //         singleObj += c;
         //         if (c == "}") {
@@ -55,16 +54,13 @@ export class JsonRpcClientUnix {
         //             singleObj = "";
         //             // break;
         //         }
-        //         // console.log(c);
         //     }
-        //     console.log(objectStrings);
         //     response += value;
         // }
         // //     if (done) {
         // //         break;
         // //     }
         // // }
-        // // console.log(response);
         // const t: object[] = objectStrings.map((s) => JSON.parse(s));
       },
 
@@ -103,7 +99,7 @@ export class JsonRpcClientUnix {
       }
       return r.result;
     } else {
-      console.error(r);
+      console.error("Error:", r);
     }
   }
   async notify(method: string, params?: JsonRpcParams) {

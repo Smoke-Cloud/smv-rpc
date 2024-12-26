@@ -7,8 +7,6 @@ const transformContent = {
     chunk: string | null,
     controller: TransformStreamDefaultController,
   ) {
-    // console.log("this.buffer:", this.buffer);
-    // console.log("chunk:", chunk);
     if (chunk === null) {
       controller.terminate();
       return;
@@ -28,10 +26,6 @@ const transformContent = {
         case "}":
           this.objectDepth--;
           if (this.objectDepth === 0) done = true;
-          // console.log(
-          //     " this.objectDepth",
-          //     this.objectDepth,
-          // );
           break;
 
         default:
@@ -44,7 +38,6 @@ const transformContent = {
         this.buffer = "";
       }
     }
-    // console.log("controller.buffer:", this.buffer);
   },
   flush() {
     /* do any destructor work here */
