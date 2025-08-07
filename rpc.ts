@@ -20,8 +20,11 @@ export class SmvRpc {
   }
 }
 
-export async function startSmvRpc(smvPath: string): Promise<SmvRpc> {
-  const smv = new SmokeviewProcess(smvPath);
+export async function startSmvRpc(
+  smvPath: string,
+  opts?: { smvBin?: string },
+): Promise<SmvRpc> {
+  const smv = new SmokeviewProcess(smvPath, opts);
   const smvRpc = await smv.launch();
   return smvRpc;
 }

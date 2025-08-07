@@ -7,8 +7,9 @@ export class SmokeviewProcess {
   private encoder: TextEncoder;
   public socketPath: string;
   public output: Deno.CommandOutput | undefined;
-  constructor(private smvPath: string) {
-    const cmd = Deno.build.os === "windows" ? "smvlua.cmd" : "smvlua";
+  constructor(private smvPath: string, opts?: { smvBin?: string }) {
+    const cmd = opts?.smvBin ?? Deno.env.get("SMOKEVIEW_PATH") ??
+      (Deno.build.os === "windows" ? "smvlua.cmd" : "smvlua");
     this.socketPath = Deno.makeTempDirSync({ suffix: ".smv.socket.dir" });
     this.socketPath = path.join(this.socketPath, "socket");
     this.command = new Deno.Command(cmd, {

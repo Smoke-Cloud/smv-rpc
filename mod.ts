@@ -31,8 +31,11 @@ export class Smokeview {
   private vectors?: CsvVectors;
   constructor(private smvRpc: SmvRpc) {
   }
-  static async launch(smvPath: string): Promise<Smokeview> {
-    const rpc = await startSmvRpc(smvPath);
+  static async launch(
+    smvPath: string,
+    opts?: { smvBin?: string },
+  ): Promise<Smokeview> {
+    const rpc = await startSmvRpc(smvPath, opts);
     return new Smokeview(rpc);
   }
   [Symbol.dispose](): void {
@@ -118,6 +121,9 @@ export class Smokeview {
   }
   async loadSliceIndices(indices: number[]): Promise<void> {
     await this.call("load_slice_indices", indices);
+  }
+  async loadSlices(specs: { index: number; frame?: number }[]): Promise<void> {
+    await this.call("load_slices", { specs });
   }
   async setCameraXMin() {
     await this.setOrthoPreset("XMIN");
