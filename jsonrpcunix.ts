@@ -14,7 +14,9 @@ export class JsonRpcClientUnix {
   private reader?: ReadableStreamDefaultReader<object>;
   private n = 0;
   private conn?: Deno.UnixConn;
-  constructor(private socketPath: string) {
+  private socketPath: string;
+  constructor(socketPath: string) {
+    this.socketPath = socketPath;
   }
   async init() {
     this.conn = await Deno.connect({

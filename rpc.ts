@@ -5,8 +5,10 @@ import { SmokeviewProcess } from "./process.ts";
 
 export class SmvRpc {
   public rpc: JsonRpcClient;
-  constructor(private process: SmokeviewProcess) {
+  private process: SmokeviewProcess;
+  constructor(process: SmokeviewProcess) {
     this.rpc = new JsonRpcClientWin(process.socketPath);
+    this.process = process;
   }
   async call(method: string, params?: JsonRpcParams): Promise<JsonRpcResult> {
     return await this.rpc.call(method, params);
