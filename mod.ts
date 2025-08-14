@@ -29,7 +29,9 @@ export interface Smoke3d {
 }
 export class Smokeview {
   private vectors?: CsvVectors;
-  constructor(private smvRpc: SmvRpc) {
+  private smvRpc: SmvRpc;
+  constructor(smvRpc: SmvRpc) {
+    this.smvRpc = smvRpc;
   }
   static async launch(
     smvPath: string,

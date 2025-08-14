@@ -50,7 +50,9 @@ export class JsonRpcClientWin {
   );
   private client: Deno.PointerValue<unknown>;
   private conn: Deno.PointerValue<unknown>;
-  constructor(public socketPath: string) {
+  public socketPath: string;
+  constructor(socketPath: string) {
+    this.socketPath = socketPath;
     this.client = this.dylib.symbols
       .jrpc_client_create_ptr();
     this.conn = this.dylib.symbols.jrpc_client_connect_ptr(
