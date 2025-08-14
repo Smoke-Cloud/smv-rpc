@@ -143,6 +143,15 @@ export class Smokeview {
   async setCameraZMax() {
     await this.setOrthoPreset("ZMAX");
   }
+  async setCameraEye(x: number, y: number, z: number) {
+    await this.call("set_camera_eye", [x, y, z]);
+  }
+  async setCameraZoom(zoom: number) {
+    await this.call("set_camera_zoom", [zoom]);
+  }
+  async setCameraViewDir(x: number, y: number, z: number) {
+    await this.call("set_camera_view_dir", [x, y, z]);
+  }
   async setOrthoPreset(view: string) {
     await this.call("set_ortho_preset", [view]);
   }
@@ -192,6 +201,9 @@ export class Smokeview {
   }
   async setCameraAz(value: number) {
     await this.call("set_camera_az", [value]);
+  }
+  async setCameraElev(value: number) {
+    await this.call("set_camera_elev", [value]);
   }
   async setFontSize(fontSize: string) {
     await this.call("set_font_size", [fontSize]);
