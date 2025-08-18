@@ -1,5 +1,5 @@
 import * as path from "jsr:@std/path@1.0.0";
-import { SmvRpc } from "./rpc.ts";
+import { type LaunchOpts, SmvRpc } from "./rpc.ts";
 
 export class SmokeviewProcess {
   private command: Deno.Command;
@@ -10,11 +10,7 @@ export class SmokeviewProcess {
   private smvPath: string;
   constructor(
     smvPath: string,
-    opts?: {
-      smvBin?: string;
-      stdout?: "null" | "piped" | "inherit" | undefined;
-      stderr?: "null" | "piped" | "inherit" | undefined;
-    },
+    opts?: LaunchOpts,
   ) {
     this.smvPath = smvPath;
     const cmd = opts?.smvBin ?? Deno.env.get("SMOKEVIEW_PATH") ??

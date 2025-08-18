@@ -22,9 +22,15 @@ export class SmvRpc {
   }
 }
 
+export type LaunchOpts = {
+  smvBin?: string;
+  stdout?: "null" | "piped" | "inherit" | undefined;
+  stderr?: "null" | "piped" | "inherit" | undefined;
+};
+
 export async function startSmvRpc(
   smvPath: string,
-  opts?: { smvBin?: string },
+  opts?: LaunchOpts,
 ): Promise<SmvRpc> {
   const smv = new SmokeviewProcess(smvPath, opts);
   const smvRpc = await smv.launch();

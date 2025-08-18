@@ -2,7 +2,7 @@ import type { JsonRpcClientUnix } from "./jsonrpcunix.ts";
 import type { JsonRpcClientWin } from "./jsonrpcwin.ts";
 export { type SmvRpc, startSmvRpc } from "./rpc.ts";
 import type { JsonRpcParams, JsonRpcResult } from "./jsonrpccommon.ts";
-import { type SmvRpc, startSmvRpc } from "./rpc.ts";
+import { type LaunchOpts, type SmvRpc, startSmvRpc } from "./rpc.ts";
 export type JsonRpcClient = JsonRpcClientUnix | JsonRpcClientWin;
 
 export interface Slice {
@@ -35,7 +35,7 @@ export class Smokeview {
   }
   static async launch(
     smvPath: string,
-    opts?: { smvBin?: string },
+    opts?: LaunchOpts,
   ): Promise<Smokeview> {
     const rpc = await startSmvRpc(smvPath, opts);
     return new Smokeview(rpc);
