@@ -8,7 +8,14 @@ export class SmokeviewProcess {
   public socketPath: string;
   public output: Deno.CommandOutput | undefined;
   private smvPath: string;
-  constructor(smvPath: string, opts?: { smvBin?: string }) {
+  constructor(
+    smvPath: string,
+    opts?: {
+      smvBin?: string;
+      stdout?: "null" | "piped" | "inherit" | undefined;
+      stderr?: "null" | "piped" | "inherit" | undefined;
+    },
+  ) {
     this.smvPath = smvPath;
     const cmd = opts?.smvBin ?? Deno.env.get("SMOKEVIEW_PATH") ??
       (Deno.build.os === "windows" ? "smvlua.cmd" : "smvlua");
@@ -16,8 +23,8 @@ export class SmokeviewProcess {
     this.socketPath = path.join(this.socketPath, "socket");
     this.command = new Deno.Command(cmd, {
       stdin: "null",
-      stdout: "piped",
-      stderr: "piped",
+      stdout: opts?.stdout ?? "piped",
+      stderr: opts?.stderr ?? "piped",
       cwd: path.dirname(this.smvPath),
       args: [
         this.smvPath,
