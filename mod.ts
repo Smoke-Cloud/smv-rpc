@@ -59,6 +59,9 @@ export class Smokeview {
   async setTitleVisibility(set: boolean) {
     await this.call("set_title_visibility", [set]);
   }
+  async setMeshLabelVisibility(set: boolean) {
+    await this.call("set_mesh_label_visibility", [set]);
+  }
   async setSmvVersionVisibility(set: boolean) {
     await this.call("set_smv_version_visibility", [set]);
   }
