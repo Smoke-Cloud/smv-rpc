@@ -234,6 +234,15 @@ export class Smokeview {
     }
     await this.call("render", opts);
   }
+  async createGif(frames: { frame_number: number; duration: number }[]) {
+    // basename?: string, options?: { basename?: string }) {
+    // let opts = options;
+    // if (basename) {
+    //   if (!opts) opts = {};
+    //   opts.basename = basename;
+    // }
+    await this.call("create_gif", { frames });
+  }
   async exit() {
     await this.smvRpc.notify("exit");
     this.smvRpc.close();
