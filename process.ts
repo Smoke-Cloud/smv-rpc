@@ -23,7 +23,7 @@ export class SmokeviewProcess {
       stderr: opts?.stderr ?? "piped",
       cwd: path.dirname(this.smvPath),
       args: [
-        this.smvPath,
+        path.basename(this.smvPath),
         "-socket",
         this.socketPath,
       ],
