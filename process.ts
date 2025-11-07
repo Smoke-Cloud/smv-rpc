@@ -55,13 +55,16 @@ export class SmokeviewProcess {
     const socketDir = path.dirname(this.socketPath);
     // poll until socket file exists. We can't use stat to be compatible
     // with windows.
-    while (!exists && this.output === undefined) {
+    let count = 0;
+    while (count < 3 || (!exists && this.output === undefined)) {
       for await (const dirEntry of Deno.readDir(socketDir)) {
         if (dirEntry.name === path.basename(this.socketPath)) {
           exists = true;
           break;
         }
       }
+      count++;
+      await sleep(1000);
     }
     return exists;
   }
@@ -75,3 +78,5 @@ export class SmokeviewProcess {
     this.close();
   }
 }
+
+export const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
