@@ -44,7 +44,9 @@ export class SmokeviewProcess {
           throw new Error("Could not establish socket");
         }
       }
-      return new SmvRpc(this);
+      const rpc = new SmvRpc(this);
+      await rpc.init();
+      return rpc;
     } catch (e) {
       this.close();
       throw e;

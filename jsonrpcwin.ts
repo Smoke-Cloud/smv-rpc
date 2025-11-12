@@ -60,6 +60,8 @@ export class JsonRpcClientWin {
       new TextEncoder().encode(`${this.socketPath}\0`),
     );
   }
+  async init() {
+  }
   private async send(method: string, params?: JsonRpcParams) {
     const methodBuffer = new TextEncoder().encode(`${method}\0`);
     const paramsBuffer = new TextEncoder().encode(

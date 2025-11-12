@@ -15,6 +15,9 @@ export class SmvRpc {
     }
     this.process = process;
   }
+  async init() {
+    await this.rpc.init();
+  }
   async call(method: string, params?: JsonRpcParams): Promise<JsonRpcResult> {
     return await this.rpc.call(method, params);
   }
