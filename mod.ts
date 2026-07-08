@@ -3,6 +3,7 @@ import type { JsonRpcClientWin } from "./jsonrpcwin.ts";
 export { type LaunchOpts, type SmvRpc, startSmvRpc } from "./rpc.ts";
 import type { JsonRpcParams, JsonRpcResult } from "./jsonrpccommon.ts";
 import { type LaunchOpts, type SmvRpc, startSmvRpc } from "./rpc.ts";
+import { sleep } from "./process.ts";
 export type JsonRpcClient = JsonRpcClientUnix | JsonRpcClientWin;
 
 export interface Slice {
@@ -249,7 +250,13 @@ export class Smokeview {
   }
   close() {}
   async call(method: string, params?: JsonRpcParams): Promise<JsonRpcResult> {
-    return await this.smvRpc.call(method, params);
+    const r = await this.smvRpc.call(method, params);
+    // TODO: this is a delay introduced to resolve some issues around the
+    // connection being set when requests to smokeview come too fast. This needs
+    // to be debugged and fixed on the smokeview side and then this delay can
+    // be removed.
+    await sleep(100);
+    return r;
   }
 }
 
