@@ -73,7 +73,7 @@ export class JsonRpcClientUnix {
   }
   async send(obj: object) {
     if (!this.writer) throw new Error("rpc not initialized");
-    await this.writer.write(JSON.stringify(obj));
+    await this.writer.write(`${JSON.stringify(obj)}\0`);
   }
   // TODO: create a stream of JSON objects
   async recv(): Promise<object | undefined> {
