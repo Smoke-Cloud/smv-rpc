@@ -1,6 +1,6 @@
 {
   "name": "@smoke-cloud/smv-rpc",
-  "version": "0.1.23",
+  "version": "0.2.0",
   "license": "GPL-3.0-or-later",
   "exports": "./mod.ts",
   "lint": {
@@ -15,5 +15,8 @@
   },
   "compilerOptions": {
     "erasableSyntaxOnly": true
+  },
+  "imports": {
+    "@std/path": "jsr:@std/path@^1.1.6"
   }
 }

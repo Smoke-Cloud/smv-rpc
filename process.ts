@@ -1,5 +1,5 @@
-import * as path from "jsr:@std/path@1.0.0";
-import { type LaunchOpts, SmvRpc } from "./rpc.ts";
+import * as path from "@std/path";
+import { createSmvRpc, type LaunchOpts, type SmvRpc } from "./rpc.ts";
 
 export class SmokeviewProcess {
   private command: Deno.Command;
@@ -44,8 +44,7 @@ export class SmokeviewProcess {
           throw new Error("Could not establish socket");
         }
       }
-      const rpc = new SmvRpc(this);
-      await rpc.init();
+      const rpc = await createSmvRpc(this);
       return rpc;
     } catch (e) {
       this.close();

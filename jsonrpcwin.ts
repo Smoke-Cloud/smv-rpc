@@ -4,6 +4,10 @@ import {
   type JsonRpcResult,
 } from "./jsonrpccommon.ts";
 
+export async function createJsonRpcClientWin(socketPath: string) {
+  return new JsonRpcClientWin(socketPath);
+}
+
 // Determine library extension based on
 // your OS.
 let libSuffix = "";

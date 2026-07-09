@@ -1,22 +1,34 @@
 import type { JsonRpcParams, JsonRpcResult } from "./jsonrpccommon.ts";
-import { JsonRpcClientUnix } from "./jsonrpcunix.ts";
-import { JsonRpcClientWin } from "./jsonrpcwin.ts";
+import {
+  createJsonRpcClientUnix,
+  type JsonRpcClientUnix,
+} from "./jsonrpcunix.ts";
+import { createJsonRpcClientWin, type JsonRpcClientWin } from "./jsonrpcwin.ts";
 import type { JsonRpcClient } from "./mod.ts";
 import { SmokeviewProcess } from "./process.ts";
 
+export async function createSmvRpc(process: SmokeviewProcess) {
+  if (Deno.build.os === "windows") {
+    return new SmvRpc(
+      process,
+      await createJsonRpcClientWin(process.socketPath),
+    );
+  } else {
+    return new SmvRpc(
+      process,
+      await createJsonRpcClientUnix(process.socketPath),
+    );
+  }
+}
 export class SmvRpc {
   public rpc: JsonRpcClient;
   private process: SmokeviewProcess;
-  constructor(process: SmokeviewProcess) {
-    if (Deno.build.os === "windows") {
-      this.rpc = new JsonRpcClientWin(process.socketPath);
-    } else {
-      this.rpc = new JsonRpcClientUnix(process.socketPath);
-    }
+  constructor(
+    process: SmokeviewProcess,
+    rpc: JsonRpcClientWin | JsonRpcClientUnix,
+  ) {
     this.process = process;
-  }
-  async init() {
-    await this.rpc.init();
+    this.rpc = rpc;
   }
   async call(method: string, params?: JsonRpcParams): Promise<JsonRpcResult> {
     return await this.rpc.call(method, params);

@@ -5,7 +5,7 @@ const transformContent = {
   start() {}, // required.
   transform(
     chunk: string | null,
-    controller: TransformStreamDefaultController,
+    controller: TransformStreamDefaultController<object>,
   ) {
     if (chunk === null) {
       controller.terminate();
@@ -44,7 +44,8 @@ const transformContent = {
   },
 };
 
-export class SplitJsonObjectsStream extends TransformStream {
+export class SplitJsonObjectsStream
+  extends TransformStream<string | null, object> {
   constructor() {
     super({
       ...transformContent,
