@@ -1,31 +1,26 @@
-import type { JsonRpcParams, JsonRpcResult } from "./jsonrpccommon.ts";
 import {
   createJsonRpcClientUnix,
-  type JsonRpcClientUnix,
-} from "./jsonrpcunix.ts";
-import { createJsonRpcClientWin, type JsonRpcClientWin } from "./jsonrpcwin.ts";
-import type { JsonRpcClient } from "./mod.ts";
+  type JsonRpcClient,
+} from "./jsonRpcClient.ts";
+import type { JsonRpcParams, JsonRpcResult } from "./jsonRpcCommon.ts";
 import { SmokeviewProcess } from "./process.ts";
 
-export async function createSmvRpc(process: SmokeviewProcess) {
-  if (Deno.build.os === "windows") {
-    return new SmvRpc(
-      process,
-      await createJsonRpcClientWin(process.socketPath),
-    );
-  } else {
-    return new SmvRpc(
-      process,
-      await createJsonRpcClientUnix(process.socketPath),
-    );
-  }
+export async function createSmvRpc(
+  process: SmokeviewProcess,
+) {
+  const connectionSettings = await process.waitForSocket();
+  if (!connectionSettings) throw new Error("no connection");
+  return new SmvRpc(
+    process,
+    await createJsonRpcClientUnix(connectionSettings),
+  );
 }
 export class SmvRpc {
   public rpc: JsonRpcClient;
   private process: SmokeviewProcess;
   constructor(
     process: SmokeviewProcess,
-    rpc: JsonRpcClientWin | JsonRpcClientUnix,
+    rpc: JsonRpcClient,
   ) {
     this.process = process;
     this.rpc = rpc;
@@ -46,6 +41,7 @@ export type LaunchOpts = {
   smvBin?: string;
   stdout?: "null" | "piped" | "inherit" | undefined;
   stderr?: "null" | "piped" | "inherit" | undefined;
+  useTcp?: boolean;
 };
 
 export async function startSmvRpc(

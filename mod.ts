@@ -1,10 +1,7 @@
-import type { JsonRpcClientUnix } from "./jsonrpcunix.ts";
-import type { JsonRpcClientWin } from "./jsonrpcwin.ts";
 export { type LaunchOpts, type SmvRpc, startSmvRpc } from "./rpc.ts";
-import type { JsonRpcParams, JsonRpcResult } from "./jsonrpccommon.ts";
+import type { JsonRpcParams, JsonRpcResult } from "./jsonRpcCommon.ts";
 import { type LaunchOpts, type SmvRpc, startSmvRpc } from "./rpc.ts";
 import { sleep } from "./process.ts";
-export type JsonRpcClient = JsonRpcClientUnix | JsonRpcClientWin;
 
 export interface Slice {
   longlabel: string;

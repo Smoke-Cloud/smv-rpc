@@ -1,4 +1,5 @@
 import {
+  type ConnectionSettings,
   isJsonRpcResponse,
   type JsonRpcParams,
   type JsonRpcRequest,
@@ -6,20 +7,39 @@ import {
   type JsonRpcResponse,
   JsonRpcResponseStream,
   type JsonRpcResult,
-} from "./jsonrpccommon.ts";
+} from "./jsonRpcCommon.ts";
 import { SplitJsonObjectsStream } from "./rstream.ts";
 
-export async function createJsonRpcClientUnix(socketPath: string) {
-  const conn = await Deno.connect({
-    transport: "unix",
-    path: socketPath,
-  });
-  return new JsonRpcClientUnix(conn);
+export async function createJsonRpcClientUnix(
+  opts: ConnectionSettings,
+) {
+  switch (opts.type) {
+    case "unix":
+      return new JsonRpcClient(
+        await Deno.connect({
+          transport: "unix",
+          path: opts.path,
+        }),
+      );
+    case "tcp":
+      return new JsonRpcClient(
+        await Deno.connect({
+          transport: "tcp",
+          hostname: opts.hostname,
+          port: opts.port,
+        }),
+      );
+    default:
+      throw new Error("invalid connectio type");
+  }
 }
 
-export class JsonRpcClientUnix {
+/**
+ * A JSON-RPC client that operates over a UNIX socket or a TCP socket.
+ */
+export class JsonRpcClient {
   private n = 0;
-  private conn: Deno.UnixConn;
+  private conn: Deno.UnixConn | Deno.TcpConn;
 
   // TODO: there doesn't seem to be a reason to keep the readable and writeable
   // streams around once we've locked them, but that may change.
@@ -28,7 +48,7 @@ export class JsonRpcClientUnix {
 
   private responseQueue: ReadableStreamDefaultReader<JsonRpcResponse>;
   // private responseStream: ReadableStream<JsonRpcResponse>;
-  constructor(conn: Deno.UnixConn) {
+  constructor(conn: Deno.UnixConn | Deno.TcpConn) {
     this.conn = conn;
     const reqStream = new JsonRpcRequestStream();
 

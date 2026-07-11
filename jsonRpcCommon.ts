@@ -1,6 +1,22 @@
 export type JsonRpcParams = object | unknown[];
 export type JsonRpcResult = unknown;
 
+export type ConnectionSettingsRequest = { type: "unix"; path: string } | {
+  type: "tcp";
+  path: string;
+};
+
+export type ConnectionSettings =
+  | UnixSocketConnectionSettings
+  | TcpSocketConnectionSettings;
+
+export type UnixSocketConnectionSettings = { type: "unix"; path: string };
+export type TcpSocketConnectionSettings = {
+  type: "tcp";
+  hostname: string;
+  port: number;
+};
+
 export interface JsonRpcResponse {
   jsonrpc: "2.0";
   id: string | number | null;
@@ -31,7 +47,6 @@ export class JsonRpcRequestStream
         controller: TransformStreamDefaultController<string>,
       ) {
         // chunk = await chunk;
-        console.log("processed:", chunk);
         controller.enqueue(`${JSON.stringify(chunk)}\0`);
       },
       flush() {
@@ -51,7 +66,6 @@ export class JsonRpcResponseStream
         controller: TransformStreamDefaultController<JsonRpcResponse>,
       ) {
         // chunk = await chunk;
-        console.log("processed:", chunk);
         controller.enqueue(chunk as JsonRpcResponse);
       },
       flush() {
