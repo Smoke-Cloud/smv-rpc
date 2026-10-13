@@ -1,4 +1,12 @@
-import * as path from "@std/path";
+import {
+  type ChildProcess,
+  spawn,
+  type SpawnOptions,
+} from "node:child_process";
+import { mkdtempSync } from "node:fs";
+import { readdir, readFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import * as path from "node:path";
 import { createSmvRpc, type LaunchOpts, type SmvRpc } from "./rpc.ts";
 import type {
   ConnectionSettings,
@@ -6,24 +14,33 @@ import type {
 } from "./jsonRpcCommon.ts";
 import { SocketAddress } from "node:net";
 
+export interface CommandOutput {
+  success: boolean;
+  code: number | null;
+  signal: NodeJS.Signals | null;
+  stdout: Uint8Array;
+  stderr: Uint8Array;
+}
+
+const stdioOpts = { null: "ignore", piped: "pipe", inherit: "inherit" } as const;
+
 export class SmokeviewProcess {
-  private command: Deno.Command;
-  private p: Deno.ChildProcess;
+  private p: ChildProcess;
   private connectionSettingsRequest: ConnectionSettingsRequest;
-  public output: Deno.CommandOutput | undefined;
+  public output: CommandOutput | undefined;
   private smvPath: string;
   constructor(
     smvPath: string,
     opts?: LaunchOpts,
   ) {
     this.smvPath = smvPath;
-    const cmd = opts?.smvBin ?? Deno.env.get("SMOKEVIEW_PATH") ??
-      (Deno.build.os === "windows" ? "smvlua.cmd" : "smvlua");
+    const cmd = opts?.smvBin ?? process.env.SMOKEVIEW_PATH ??
+      (process.platform === "win32" ? "smvlua.cmd" : "smvlua");
     const args = [
       path.basename(this.smvPath),
     ];
-    if (opts?.useTcp || Deno.build.os === "windows") {
-      const dir = Deno.makeTempDirSync({ suffix: ".smv.socket.dir" });
+    if (opts?.useTcp || process.platform === "win32") {
+      const dir = mkdtempSync(path.join(tmpdir(), "smv.socket.dir."));
       const tcpConnectionInfoPath = path.join(dir, "connection");
       args.push("-tcp-file");
       args.push(tcpConnectionInfoPath);
@@ -32,7 +49,7 @@ export class SmokeviewProcess {
         path: tcpConnectionInfoPath,
       };
     } else {
-      const dir = Deno.makeTempDirSync({ suffix: ".smv.socket.dir" });
+      const dir = mkdtempSync(path.join(tmpdir(), "smv.socket.dir."));
       const socketPath = path.join(dir, "socket");
       args.push("-socket");
       args.push(socketPath);
@@ -41,15 +58,44 @@ export class SmokeviewProcess {
         path: socketPath,
       };
     }
-    this.command = new Deno.Command(cmd, {
-      stdin: "null",
-      stdout: opts?.stdout ?? "piped",
-      stderr: opts?.stderr ?? "piped",
+    const spawnOpts: SpawnOptions = {
+      stdio: [
+        "ignore",
+        stdioOpts[opts?.stdout ?? "piped"],
+        stdioOpts[opts?.stderr ?? "piped"],
+      ],
       cwd: path.dirname(this.smvPath),
-      args,
+    };
+    // Node can only run .cmd/.bat files on windows via a shell, in which case
+    // we need to do the quoting ourselves.
+    if (process.platform === "win32" && /\.(cmd|bat)$/i.test(cmd)) {
+      const line = [cmd, ...args].map((arg) => `"${arg}"`).join(" ");
+      this.p = spawn(line, { ...spawnOpts, shell: true });
+    } else {
+      this.p = spawn(cmd, args, spawnOpts);
+    }
+    const stdout: Uint8Array[] = [];
+    const stderr: Uint8Array[] = [];
+    this.p.stdout?.on("data", (chunk) => stdout.push(chunk));
+    this.p.stderr?.on("data", (chunk) => stderr.push(chunk));
+    this.p.on("error", (e) => {
+      this.output ??= {
+        success: false,
+        code: null,
+        signal: null,
+        stdout: Buffer.concat(stdout),
+        stderr: Buffer.from(e.message),
+      };
     });
-    this.p = this.command.spawn();
-    this.p.output().then((output) => this.output = output);
+    this.p.on("close", (code, signal) => {
+      this.output ??= {
+        success: code === 0,
+        code,
+        signal,
+        stdout: Buffer.concat(stdout),
+        stderr: Buffer.concat(stderr),
+      };
+    });
     this.p.ref();
   }
   async launch(): Promise<SmvRpc> {
@@ -78,12 +124,12 @@ export class SmokeviewProcess {
       // with windows.
       let count = 0;
       while (count < 3 || (!exists && this.output === undefined)) {
-        for await (const dirEntry of Deno.readDir(socketDir)) {
+        for (const dirEntry of await readdir(socketDir)) {
           if (
-            dirEntry.name === path.basename(this.connectionSettingsRequest.path)
+            dirEntry === path.basename(this.connectionSettingsRequest.path)
           ) {
             const s =
-              (await Deno.readTextFile(this.connectionSettingsRequest.path))
+              (await readFile(this.connectionSettingsRequest.path, "utf8"))
                 .trim();
             const v4 = SocketAddress.parse(s);
             if (!v4?.port) {
@@ -110,9 +156,9 @@ export class SmokeviewProcess {
       // with windows.
       let count = 0;
       while (count < 3 || (!exists && this.output === undefined)) {
-        for await (const dirEntry of Deno.readDir(socketDir)) {
+        for (const dirEntry of await readdir(socketDir)) {
           if (
-            dirEntry.name === path.basename(this.connectionSettingsRequest.path)
+            dirEntry === path.basename(this.connectionSettingsRequest.path)
           ) {
             exists = {
               type: "unix",
@@ -130,7 +176,7 @@ export class SmokeviewProcess {
   close() {
     // console.error("killing");
     // this.p.kill("SIGINT");
-    // Deno.kill(this.p.pid, "SIGINT");
+    // process.kill(this.p.pid, "SIGINT");
     this.p.ref();
   }
   [Symbol.dispose]() {

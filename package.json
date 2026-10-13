@@ -1,0 +1,27 @@
+{
+  "name": "@smoke-cloud/smv-rpc",
+  "version": "0.3.0-beta.2",
+  "type": "module",
+  "exports": {
+    "types": "./dist/mod.d.ts",
+    "default": "./dist/mod.js"
+  },
+  "files": [
+    "dist",
+    "!dist/mod_test.*",
+    "!dist/test.*"
+  ],
+  "license": "GPL-3.0-or-later",
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsc",
+    "check": "tsc --noEmit",
+    "prepack": "npm run build"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "typescript": "^7.0.2"
+  }
+}

@@ -1,5 +1,6 @@
-// import { assertEquals } from "jsr:@std/assert";
+// import assert from "node:assert/strict";
+// import { test } from "node:test";
 
-// Deno.test(function addTest() {
-//   assertEquals(add(2, 3), 5);
+// test(function addTest() {
+//   assert.equal(add(2, 3), 5);
 // });

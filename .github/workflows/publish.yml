@@ -10,7 +10,19 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      id-token: write # The OIDC ID token is used for authentication with JSR.
+      id-token: write # The OIDC ID token is used for authentication with npm.
     steps:
       - uses: actions/checkout@v4
-      - run: npx jsr publish
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+      - run: npm ci
+      - run: npm run check
+      # Only publish when the version in package.json isn't on npm yet.
+      # Prerelease versions (e.g. 0.3.0-beta.1) are published under their
+      # prerelease tag (beta) rather than latest.
+      - run: |
+          VERSION=$(node -p "require('./package.json').version")
+          TAG=$(node -p "require('./package.json').version.match(/-([a-z]+)/i)?.[1] ?? 'latest'")
+          npm view "@smoke-cloud/smv-rpc@$VERSION" version || npm publish --tag "$TAG"

@@ -1,3 +1,5 @@
+import { connect, type Socket } from "node:net";
+import { Duplex } from "node:stream";
 import {
   type ConnectionSettings,
   isJsonRpcResponse,
@@ -16,22 +18,25 @@ export async function createJsonRpcClientUnix(
   switch (opts.type) {
     case "unix":
       return new JsonRpcClient(
-        await Deno.connect({
-          transport: "unix",
-          path: opts.path,
-        }),
+        await connectSocket(connect({ path: opts.path })),
       );
     case "tcp":
       return new JsonRpcClient(
-        await Deno.connect({
-          transport: "tcp",
-          hostname: opts.hostname,
-          port: opts.port,
-        }),
+        await connectSocket(connect({ host: opts.hostname, port: opts.port })),
       );
     default:
       throw new Error("invalid connectio type");
   }
+}
+
+function connectSocket(socket: Socket): Promise<Socket> {
+  return new Promise((resolve, reject) => {
+    socket.once("error", reject);
+    socket.once("connect", () => {
+      socket.off("error", reject);
+      resolve(socket);
+    });
+  });
 }
 
 /**
@@ -39,7 +44,7 @@ export async function createJsonRpcClientUnix(
  */
 export class JsonRpcClient {
   private n = 0;
-  private conn: Deno.UnixConn | Deno.TcpConn;
+  private conn: Socket;
 
   // TODO: there doesn't seem to be a reason to keep the readable and writeable
   // streams around once we've locked them, but that may change.
@@ -48,15 +53,18 @@ export class JsonRpcClient {
 
   private responseQueue: ReadableStreamDefaultReader<JsonRpcResponse>;
   // private responseStream: ReadableStream<JsonRpcResponse>;
-  constructor(conn: Deno.UnixConn | Deno.TcpConn) {
+  constructor(conn: Socket) {
     this.conn = conn;
+    const { readable, writable } = Duplex.toWeb(this.conn);
     const reqStream = new JsonRpcRequestStream();
 
     const sendStream = reqStream.readable.pipeThrough(new TextEncoderStream());
-    sendStream.pipeTo(this.conn.writable);
+    // The pipe is aborted when the socket closes (e.g. when smokeview exits).
+    // Any later write to sendQueue will still reject.
+    sendStream.pipeTo(writable).catch(() => {});
     this.sendQueue = reqStream.writable.getWriter();
 
-    const responseStream = this.conn.readable
+    const responseStream = readable
       .pipeThrough(new TextDecoderStream())
       .pipeThrough(new SplitJsonObjectsStream())
       .pipeThrough(new JsonRpcResponseStream());
